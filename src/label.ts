@@ -1,4 +1,3 @@
-import { ComAtprotoLabelDefs } from '@atcute/client/lexicons';
 import { LabelerServer } from '@skyware/labeler';
 
 import { DID, SIGNING_KEY } from './config.js';
@@ -7,7 +6,7 @@ import logger from './logger.js';
 
 export const labelerServer = new LabelerServer({ did: DID, signingKey: SIGNING_KEY });
 
-export const label = (did: string, rkey: string) => {
+export const label = async (did: string, rkey: string) => {
   logger.info(`Received rkey: ${rkey} for ${did}`);
 
   if (rkey === 'self') {
@@ -15,24 +14,27 @@ export const label = (did: string, rkey: string) => {
     return;
   }
   try {
-    const labels = fetchCurrentLabels(did);
-
+    const labels = await fetchCurrentLabels(did);
+    logger.debug('Update labels:', labels);
     if (rkey.includes(DELETE)) {
-      deleteAllLabels(did, labels);
+      await deleteAllLabels(did, labels);
     } else {
-      addOrUpdateLabel(did, rkey, labels);
+      await addOrUpdateLabel(did, rkey, labels);
     }
   } catch (error) {
     logger.error(`Error in \`label\` function: ${error}`);
   }
 };
 
-function fetchCurrentLabels(did: string) {
-  const query = labelerServer.db
-    .prepare<string[]>(`SELECT * FROM labels WHERE uri = ?`)
-    .all(did) as ComAtprotoLabelDefs.Label[];
+async function fetchCurrentLabels(did: string) {
+  const { rows } = await labelerServer.db.execute({
+    sql: `SELECT * FROM labels WHERE uri = ?`,
+    args: [did],
+  });
 
-  const labels = query.reduce((set, label) => {
+  const labels = rows.reduce((set, unsafeLabel) => {
+    const label = unsafeLabel as unknown as { val: string; neg: boolean };
+
     if (!label.neg) set.add(label.val);
     else set.delete(label.val);
     return set;
@@ -45,7 +47,7 @@ function fetchCurrentLabels(did: string) {
   return labels;
 }
 
-function deleteAllLabels(did: string, labels: Set<string>) {
+async function deleteAllLabels(did: string, labels: Set<string>) {
   const labelsToDelete: string[] = Array.from(labels);
 
   if (labelsToDelete.length === 0) {
@@ -53,7 +55,7 @@ function deleteAllLabels(did: string, labels: Set<string>) {
   } else {
     logger.info(`Labels to delete: ${labelsToDelete.join(', ')}`);
     try {
-      labelerServer.createLabels({ uri: did }, { negate: labelsToDelete });
+      await labelerServer.createLabels({ uri: did }, { negate: labelsToDelete });
       logger.info('Successfully deleted all labels');
     } catch (error) {
       logger.error(`Error deleting all labels: ${error}`);
@@ -61,7 +63,7 @@ function deleteAllLabels(did: string, labels: Set<string>) {
   }
 }
 
-function addOrUpdateLabel(did: string, rkey: string, labels: Set<string>) {
+async function addOrUpdateLabel(did: string, rkey: string, labels: Set<string>) {
   const newLabel = LABELS.find((label) => label.rkey === rkey);
   if (!newLabel) {
     logger.warn(`New label not found: ${rkey}. Likely liked a post that's not one for labels.`);
@@ -71,7 +73,7 @@ function addOrUpdateLabel(did: string, rkey: string, labels: Set<string>) {
 
   if (labels.size >= LABEL_LIMIT) {
     try {
-      labelerServer.createLabels({ uri: did }, { negate: Array.from(labels) });
+      await labelerServer.createLabels({ uri: did }, { negate: Array.from(labels) });
       logger.info(`Successfully negated existing labels: ${Array.from(labels).join(', ')}`);
     } catch (error) {
       logger.error(`Error negating existing labels: ${error}`);
@@ -79,7 +81,7 @@ function addOrUpdateLabel(did: string, rkey: string, labels: Set<string>) {
   }
 
   try {
-    labelerServer.createLabel({ uri: did, val: newLabel.identifier });
+    await labelerServer.createLabel({ uri: did, val: newLabel.identifier });
     logger.info(`Successfully labeled ${did} with ${newLabel.identifier}`);
   } catch (error) {
     logger.error(`Error adding new label: ${error}`);

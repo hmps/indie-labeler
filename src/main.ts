@@ -58,9 +58,9 @@ jetstream.on('error', (error) => {
 });
 
 jetstream.onCreate(WANTED_COLLECTION, (event: CommitCreateEvent<typeof WANTED_COLLECTION>) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (event.commit?.record?.subject?.uri?.includes(DID)) {
-    label(event.did, event.commit.record.subject.uri.split('/').pop()!);
+  if (event.commit.record.subject.uri.includes(DID)) {
+    logger.debug('[VAAM] event.commit.record.subject.uri.:', event.commit.record.subject.uri);
+    void label(event.did, event.commit.record.subject.uri.split('/').pop()!);
   }
 });
 
@@ -76,18 +76,38 @@ labelerServer.app.listen({ port: PORT, host: HOST }, (error, address) => {
 
 jetstream.start();
 
-function shutdown() {
+let isShuttingDown = false;
+
+async function stopThings() {
+  fs.writeFileSync('cursor.txt', jetstream.cursor!.toString(), 'utf8');
+  jetstream.close();
+  labelerServer.stop();
+
+  await Promise.resolve();
+
+  return true;
+}
+
+async function gracefulShutdown(signal: string) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  // Resume stdin to prevent the process from exiting immediately
+  process.stdin.resume();
+
+  logger.info(`${signal} received. Starting graceful shutdown...`);
+
   try {
-    logger.info('Shutting down gracefully...');
-    fs.writeFileSync('cursor.txt', jetstream.cursor!.toString(), 'utf8');
-    jetstream.close();
-    labelerServer.stop();
-    metricsServer.close();
+    await Promise.all([stopThings(), metricsServer.close()]);
+
+    logger.info('All cleanup tasks completed');
+    process.exit(0);
   } catch (error) {
-    logger.error(`Error shutting down gracefully: ${error}`);
+    console.error('Error during shutdown:', error);
     process.exit(1);
   }
 }
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+process.on('SIGINT', () => gracefulShutdown('SIGINT')); // Ctrl+C
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM')); // Kill command
