@@ -1,10 +1,14 @@
 import { LabelerServer } from '@skyware/labeler';
 
-import { DID, SIGNING_KEY } from './config.js';
+import { DB_PATH, DID, SIGNING_KEY } from './config.js';
 import { DELETE, LABELS, LABEL_LIMIT } from './constants.js';
 import logger from './logger.js';
 
-export const labelerServer = new LabelerServer({ did: DID, signingKey: SIGNING_KEY });
+export const labelerServer = new LabelerServer({
+  did: DID,
+  signingKey: SIGNING_KEY,
+  dbPath: DB_PATH,
+});
 
 export const label = async (did: string, rkey: string) => {
   logger.info(`Received rkey: ${rkey} for ${did}`);

@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true,
     "strict": true,
     "target": "ESNext",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "types": ["node"],
+    "outDir": "./build"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules/**"]
+  "exclude": ["node_modules"]
 }

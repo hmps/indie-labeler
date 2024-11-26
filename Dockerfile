@@ -1,24 +1,31 @@
-FROM oven/bun:1 as builder
+FROM node:23-alpine AS base
 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
 WORKDIR /app
 
-COPY package.json bun.lockb ./
-RUN bun install
-COPY . .
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-FROM oven/bun:1-slim
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run build
 
-WORKDIR /app
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/build /app/build
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/.env ./
+RUN mkdir -p /app/data && chown -R node:node /app/data
 
-VOLUME [ "/app/data" ]
-
-EXPOSE 3000
-
+ENV DB_PATH=/app/data/labels.db
+ENV CURSOR_PATH=/app/data/cursor.txt
 ENV NODE_ENV=production
 
-CMD ["bun", "src/main.ts"] 
+VOLUME [ "/app/data" ]
+EXPOSE 3000/tcp
+
+USER node
+
+CMD ["pnpm", "start"]

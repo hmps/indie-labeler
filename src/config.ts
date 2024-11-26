@@ -11,3 +11,5 @@ export const BSKY_IDENTIFIER = process.env.BSKY_IDENTIFIER ?? '';
 export const BSKY_PASSWORD = process.env.BSKY_PASSWORD ?? '';
 export const CURSOR_UPDATE_INTERVAL =
   process.env.CURSOR_UPDATE_INTERVAL ? Number(process.env.CURSOR_UPDATE_INTERVAL) : 60000;
+export const CURSOR_PATH = process.env.CURSOR_PATH ?? 'cursor.txt';
+export const DB_PATH = process.env.DB_PATH ?? 'labels.db';

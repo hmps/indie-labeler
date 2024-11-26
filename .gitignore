@@ -1,5 +1,7 @@
 .env
-node_modules
+node_modules/
+build/
+data/
 cursor.txt
 *.log
 labels.db*
