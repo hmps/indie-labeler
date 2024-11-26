@@ -1,46 +1,13 @@
 import { Label } from './types.js';
 
-export const DELETE = 'insert-rkey-of-delete-post-here';
+export const DELETE = '3lbtgtir3rk22';
 export const LABEL_LIMIT = 1;
 export const LABELS: Label[] = [
   {
-    rkey: 'insert-rkey-here',
-    identifier: 'earth',
+    rkey: '3lbtgtimr7s27',
+    identifier: 'bootstrapped',
     locales: [
-      { lang: 'en', name: 'Earth 🌎', description: 'Earth'},
-      { lang: 'pt-BR', name: 'Terra 🌎', description: 'Terra'},
-    ]
-  },
-  {
-    rkey: 'insert-rkey-here',
-    identifier: 'fire',
-    locales: [
-      { lang: 'en', name: 'Fire 🔥', description: 'Fire'},
-      { lang: 'pt-BR', name: 'Fogo 🔥', description: 'Fogo'},
-    ]
-  },
-  {
-    rkey: 'insert-rkey-here',
-    identifier: 'air',
-    locales: [
-      { lang: 'en', name: 'Air 💨', description: 'Air'},
-      { lang: 'pt-BR', name: 'Ar 💨', description: 'Ar'},
-    ]
-  },
-  {
-    rkey: 'insert-rkey-here',
-    identifier: 'water',
-    locales: [
-      { lang: 'en', name: 'Water 💧', description: 'Water'},
-      { lang: 'pt-BR', name: 'Água 💧', description: 'Água'},
-    ]
-  },
-  {
-    rkey: 'insert-rkey-here',
-    identifier: 'love',
-    locales: [
-      { lang: 'en', name: 'Love 💞', description: 'Love'},
-      { lang: 'pt-BR', name: 'Amor 💞', description: 'Amor'},
+      { lang: 'en', name: 'Bootstrapped', description: 'I am running this off the straps of my boots!'},
     ]
   },
 ];

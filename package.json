@@ -1,10 +1,11 @@
 {
-  "name": "zodiacsigns-bsky",
+  "name": "bsky-indie-labeler",
   "version": "1.0.0",
   "type": "module",
+  "private": true,
   "scripts": {
-    "start": "npx tsx src/main.ts",
-    "dev": "npx tsx --watch src/main.ts",
+    "start": "pnpm dlx tsx src/main.ts",
+    "dev": "pnpm dlx tsx --watch src/main.ts",
     "format": "bunx prettier --write .",
     "lint": "bunx eslint .",
     "lint:fix": "bunx eslint --fix .",
