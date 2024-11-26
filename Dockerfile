@@ -17,8 +17,7 @@ COPY --from=builder /app/.env ./
 
 VOLUME [ "/app/data" ]
 
-EXPOSE 4100
-EXPOSE 4101
+EXPOSE 3000
 
 ENV NODE_ENV=production
 
