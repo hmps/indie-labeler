@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "pnpm dlx tsx src/main.ts",
-    "dev": "pnpm dlx tsx --watch src/main.ts",
+    "start": "bunx tsx src/main.ts",
+    "dev": "bunx tsx --watch src/main.ts",
     "format": "bunx prettier --write .",
     "lint": "bunx eslint .",
     "lint:fix": "bunx eslint --fix .",
